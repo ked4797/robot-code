@@ -1,0 +1,19 @@
+Pins for components:
+TOF1: 23
+TOF2: 13
+TOF3: 2
+TOF4: 5
+IR: 14
+Loudspeaker: 26
+tracker1: 27
+tracker2: 4
+temp sensor: 25
+
+right motor forwards: 17
+right motor backwards: 16
+left motor forwards: 19
+left motor backwards: 18
+
+Because I need to record the motor speeds that make things go in straight lines or I will forget them:
+R: 235 L: 230
+R: 215 L: 200

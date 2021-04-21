@@ -1,3 +1,0 @@
-Because I need to record the motor speeds that make things go in straight lines or I will forget them:
-R: 235 L: 230
-R: 215 L: 200
