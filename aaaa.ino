@@ -1,4 +1,10 @@
 #include "Adafruit_VL53L0X.h"
+#include "analogWrite.h"
+
+#define right0 17
+#define right1 16
+#define left0 19
+#define left1 18
 
 // address we will assign if dual sensor is present
 #define LOX1_ADDRESS 0x30
@@ -112,6 +118,22 @@ void read_dual_sensors() {
     analogWrite(right1, 0);
     analogWrite(left1, 0);
   }
+
+  if(measure2.RangeMilliMeter < 80){
+    analogWrite(right1, 0);
+    analogWrite(left1, 0);
+  }
+
+  if(measure3.RangeMilliMeter < 80){
+    analogWrite(right1, 0);
+    analogWrite(left1, 0);
+    unsigned long startTime = millis();
+    analogWrite(left1, 200);
+    while (millis() - startTime < 1000){
+      
+    }
+    analogWrite(left1, 0);
+  }
 }
 
 void setup() {
@@ -123,6 +145,16 @@ void setup() {
   pinMode(SHT_LOX1, OUTPUT);
   pinMode(SHT_LOX2, OUTPUT);
   pinMode(SHT_LOX3, OUTPUT);
+
+  pinMode(right0, OUTPUT);
+  pinMode(right1, OUTPUT);
+  pinMode(left0, OUTPUT);
+  pinMode(left1, OUTPUT);
+
+  analogWrite(right0, 0);
+  analogWrite(right1, 200);
+  analogWrite(left0, 0);
+  analogWrite(left1, 200);
   
   Serial.println(F("Shutdown pins inited..."));
 
