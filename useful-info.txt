@@ -17,3 +17,9 @@ left motor backwards: 18
 Because I need to record the motor speeds that make things go in straight lines or I will forget them:
 R: 235 L: 230
 R: 215 L: 200
+
+
+Things to do during Half Term:
+- Turn right
+- Get noise working in conjunction with sensors and motors
+- Get IR sensor operating
