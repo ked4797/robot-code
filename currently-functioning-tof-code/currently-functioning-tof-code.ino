@@ -8,7 +8,6 @@
 // address we will assign if dual sensor is present
 #define LOX1_ADDRESS 0x30
 #define LOX2_ADDRESS 0x31
-#define LOX3_ADDRESS 0x32
 
 // set the pins to shutdown
 #define SHT_LOX1 23
@@ -100,12 +99,7 @@ void read_dual_sensors() {
   
   Serial.println();
 
- /* if (measure1.RangeMilliMeter < 100){
-    analogWrite(left1, 0);
-    analogWrite(right1, 0);
-  }*/
-
-  if ((measure2.RangeMilliMeter > 250 || turn == true) && turned == false){
+  if ((measure2.RangeMilliMeter > 250 || turn == true) && turned == false && millis() > 8000){
     if (turn != true){
       turn = true;
       startTime = millis();
@@ -120,9 +114,21 @@ void read_dual_sensors() {
     turned = true;
     }
   }
+
+  if (measure1.RangeMilliMeter < 150){
+    if (!contact){
+      contact = true;
+      contactStartTime = millis();
+      analogWrite(left1, 0);
+      analogWrite(right1, 0);
+    }
+    if (millis() - contactStartTime > 500){
+      analogWrite(left0, 200);
+      analogWrite(right0, 200);
+    }   
+  }
 }
-
-
+  
 void setup() {
   Serial.begin(115200);
 
@@ -138,6 +144,7 @@ void setup() {
   analogWrite(left1, 200);
   analogWrite(right0, 0);
   analogWrite(right1, 200);
+  Serial.println("Motors on");
 
   pinMode(SHT_LOX1, OUTPUT);
   pinMode(SHT_LOX2, OUTPUT);
