@@ -75,7 +75,8 @@ void setID() {
 }
 
 void read_dual_sensors() {
-  
+
+  // take readings from TOFs
   lox1.rangingTest(&measure1, true); // pass in 'true' to get debug data printout!
   lox2.rangingTest(&measure2, true); // pass in 'true' to get debug data printout!
 
@@ -99,8 +100,11 @@ void read_dual_sensors() {
   
   Serial.println();
 
+  // if the distance to the right is greater than 250mm or the robot is in the process of turning, and it has not turned before and it's been more than 8 seconds
   if ((measure2.RangeMilliMeter > 250 || turn == true) && turned == false && millis() > 8000){
+    // if this is the first time the previous if statement has been true
     if (turn != true){
+      // start turning and record the start turn time
       turn = true;
       startTime = millis();
       analogWrite(left1, 0);
@@ -108,27 +112,35 @@ void read_dual_sensors() {
       analogWrite(left1, 200);
       Serial.write("Turning...\n");
     }
-    
+
+    // if it has been more than 1.5 seconds
    if (millis() - startTime > 1500){
+    // stop 
     analogWrite(left1, 0);   
     turned = true;
     }
   }
 
+  // if whatever is in front of the robot is less than 150mm away
   if (measure1.RangeMilliMeter < 150){
+    // if it has not yet stopped 
     if (!contact){
+      // stop and save start time
       contact = true;
       contactStartTime = millis();
       analogWrite(left1, 0);
       analogWrite(right1, 0);
     }
+    // if it has been more than 0.5 seconds
     if (millis() - contactStartTime > 500){
+      // go again
       analogWrite(left0, 200);
       analogWrite(right0, 200);
     }   
   }
 }
-  
+
+// this is the first thing to happen 
 void setup() {
   Serial.begin(115200);
 
