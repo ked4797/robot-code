@@ -31,6 +31,7 @@ bool turned = false;
 bool done = false;
 unsigned long startTime;
 bool stopped = false;
+bool reversing = false;
 bool contact = false;
 unsigned long contactStartTime;
 
@@ -100,8 +101,10 @@ void read_dual_sensors() {
   
   Serial.println();
 
+
+  lox2.rangingTest(&measure2, true);
   // if the distance to the right is greater than 250mm or the robot is in the process of turning, and it has not turned before and it's been more than 8 seconds
-  if ((measure2.RangeMilliMeter > 250 || turn == true) && turned == false && millis() > 8000){
+   if ((measure2.RangeMilliMeter > 250 || turn == true) && turned == false && millis() > 8000){
     // if this is the first time the previous if statement has been true
     if (turn != true){
       // start turning and record the start turn time
@@ -121,8 +124,11 @@ void read_dual_sensors() {
     }
   }
 
+
+  lox1.rangingTest(&measure1, true);
   // if whatever is in front of the robot is less than 150mm away
-  if (measure1.RangeMilliMeter < 150){
+  if (measure1.RangeMilliMeter < 150 || contact){
+    Serial.println("Contact");
     // if it has not yet stopped 
     if (!contact){
       // stop and save start time
@@ -132,12 +138,30 @@ void read_dual_sensors() {
       analogWrite(right1, 0);
     }
     // if it has been more than 0.5 seconds
-    if (millis() - contactStartTime > 500){
-      // go again
+    /*if (millis() - contactStartTime > 500 && !reversing){
+      // reverse
+      reversing = true;
       analogWrite(left0, 200);
       analogWrite(right0, 200);
-    }   
+    }*/   
+
+    if (millis() - contactStartTime > 2000){
+      analogWrite(right0, 0);
+      analogWrite(left0, 0);
+      analogWrite(left1, 200);
+      analogWrite(right1, 200);
+      contact = false;
+      reversing = false;
+    }
   }
+
+  /*if (contact && millis() - contactStartTime > 2000){
+    contact = false;
+    analogWrite(left0, 0);
+    analogWrite(right0, 0);
+    analogWrite(left1, 200);
+    analogWrite(right1, 200);
+  }*/
 }
 
 // this is the first thing to happen 
