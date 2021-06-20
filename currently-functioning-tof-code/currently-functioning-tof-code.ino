@@ -104,7 +104,7 @@ void read_dual_sensors() {
 
   lox2.rangingTest(&measure2, true);
   // if the distance to the right is greater than 250mm or the robot is in the process of turning, and it has not turned before and it's been more than 8 seconds
-   if ((measure2.RangeMilliMeter > 250 || turn == true) && turned == false && millis() > 8000){
+   if ((measure2.RangeMilliMeter > 250 || turn == true) && turned == false && millis() > 6000){
     // if this is the first time the previous if statement has been true
     if (turn != true){
       // start turning and record the start turn time
@@ -117,9 +117,11 @@ void read_dual_sensors() {
     }
 
     // if it has been more than 1.5 seconds
-   if (millis() - startTime > 1500){
+   if (millis() - startTime > 1300){
     // stop 
     analogWrite(left1, 0);   
+    analogWrite(left1, 200);
+    analogWrite(right1, 200);
     turned = true;
     }
   }
