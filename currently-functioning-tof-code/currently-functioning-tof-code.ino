@@ -34,6 +34,8 @@ bool stopped = false;
 bool reversing = false;
 bool contact = false;
 unsigned long contactStartTime;
+int rightSpeed = 206;
+int leftSpeed = 204;
 
 /*
     Reset all sensors by setting all of their XSHUT pins low for delay(10), then set all XSHUT high to bring out of reset
@@ -112,7 +114,7 @@ void read_dual_sensors() {
       startTime = millis();
       analogWrite(left1, 0);
       analogWrite(right1, 0);
-      analogWrite(left1, 200);
+      analogWrite(left1, leftSpeed);
       Serial.write("Turning...\n");
     }
 
@@ -120,8 +122,8 @@ void read_dual_sensors() {
    if (millis() - startTime > 1300){
     // stop 
     analogWrite(left1, 0);   
-    analogWrite(left1, 200);
-    analogWrite(right1, 200);
+    analogWrite(left1, leftSpeed);
+    analogWrite(right1, rightSpeed);
     turned = true;
     }
   }
@@ -150,8 +152,8 @@ void read_dual_sensors() {
     if (millis() - contactStartTime > 2000){
       analogWrite(right0, 0);
       analogWrite(left0, 0);
-      analogWrite(left1, 200);
-      analogWrite(right1, 200);
+      analogWrite(left1, leftSpeed);
+      analogWrite(right1, rightSpeed);
       contact = false;
       reversing = false;
     }
@@ -179,9 +181,9 @@ void setup() {
   pinMode (left1, OUTPUT);
 
   analogWrite(left0, 0);
-  analogWrite(left1, 200);
+  analogWrite(left1, leftSpeed);
   analogWrite(right0, 0);
-  analogWrite(right1, 200);
+  analogWrite(right1, rightSpeed);
   Serial.println("Motors on");
 
   pinMode(SHT_LOX1, OUTPUT);
