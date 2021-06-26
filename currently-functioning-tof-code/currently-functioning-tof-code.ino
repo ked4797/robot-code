@@ -1,9 +1,19 @@
+// all left/right associations are as viewed from behind
+
 // #1 is front
 // #2 is right
 
 #include "Adafruit_VL53L0X.h"
 #include "analogWrite.h"
 #include "Tone32.h"
+#include <IRremoteESP8266.h>
+#include <IRrecv.h>
+#include <IRutils.h>
+
+// IR setup
+const uint16_t kRecvPin = 14;
+IRrecv irrecv(kRecvPin);
+decode_results results;
 
 // address we will assign if dual sensor is present
 #define LOX1_ADDRESS 0x30
@@ -18,6 +28,9 @@
 #define left0 19
 #define left1 18
 
+#define trackerRight 4
+#define trackerLeft 27
+
 // objects for the vl53l0x
 Adafruit_VL53L0X lox1 = Adafruit_VL53L0X();
 Adafruit_VL53L0X lox2 = Adafruit_VL53L0X();
@@ -27,6 +40,7 @@ VL53L0X_RangingMeasurementData_t measure1;
 VL53L0X_RangingMeasurementData_t measure2;
 
 bool turn = false;
+bool turning = false;
 bool turned = false;
 bool done = false;
 unsigned long startTime;
@@ -34,7 +48,7 @@ bool stopped = false;
 bool reversing = false;
 bool contact = false;
 unsigned long contactStartTime;
-int rightSpeed = 206;
+int rightSpeed = 207;
 int leftSpeed = 204;
 
 /*
@@ -79,9 +93,37 @@ void setID() {
 
 void read_dual_sensors() {
 
+  if (digitalRead(trackerRight) == 1 && digitalRead(trackerLeft) == 1){
+    analogWrite(left1, leftSpeed);
+    analogWrite(right1, rightSpeed);
+  }
+  else if (digitalRead(trackerRight) == 0 && digitalRead(trackerLeft) == 1){
+    analogWrite(left1, 0);
+  }
+  else if (digitalRead(trackerLeft) == 0 && digitalRead(trackerRight) == 1){
+    analogWrite(right1, 0);
+  }
+
+  // take a reading from IR
+  if (irrecv.decode(&results)) {
+    // print() & println() can't handle printing long longs. (uint64_t)
+    serialPrintUint64(results.value, HEX);
+    Serial.println("");
+    if (results.value == 0xFF01FE){
+      // continue straight on
+    }
+    else if (results.value == 0xFF04FB){
+      // robot is off to the left
+    }
+    else if (results.value == 0xFF02FD){
+      // robot is off to the right
+    }
+    irrecv.resume();  // Receive the next value
+  }
+
   // take readings from TOFs
-  lox1.rangingTest(&measure1, true); // pass in 'true' to get debug data printout!
-  lox2.rangingTest(&measure2, true); // pass in 'true' to get debug data printout!
+  lox1.rangingTest(&measure1, false); // pass in 'true' to get debug data printout!
+  lox2.rangingTest(&measure2, false); // pass in 'true' to get debug data printout!
 
   // print sensor one reading
   Serial.print(F("1: "));
@@ -106,20 +148,25 @@ void read_dual_sensors() {
 
   lox2.rangingTest(&measure2, true);
   // if the distance to the right is greater than 250mm or the robot is in the process of turning, and it has not turned before and it's been more than 8 seconds
-   if ((measure2.RangeMilliMeter > 250 || turn == true) && turned == false && millis() > 6000){
+   if ((measure2.RangeMilliMeter > 250 || turn == true) && turned == false && millis() > 10000){
     // if this is the first time the previous if statement has been true
     if (turn != true){
       // start turning and record the start turn time
       turn = true;
       startTime = millis();
+    }
+
+  if (turn){
+    if (millis() - startTime > 500 && turning == false){
       analogWrite(left1, 0);
       analogWrite(right1, 0);
       analogWrite(left1, leftSpeed);
       Serial.write("Turning...\n");
+      turning = true;
     }
-
+  }
     // if it has been more than 1.5 seconds
-   if (millis() - startTime > 1300){
+   if (millis() - startTime > 1800){
     // stop 
     analogWrite(left1, 0);   
     analogWrite(left1, leftSpeed);
@@ -179,12 +226,16 @@ void setup() {
   pinMode (left0, OUTPUT);
   pinMode (right1, OUTPUT);
   pinMode (left1, OUTPUT);
+  pinMode (trackerRight, INPUT);
+  pinMode (trackerLeft, INPUT);
 
   analogWrite(left0, 0);
   analogWrite(left1, leftSpeed);
   analogWrite(right0, 0);
   analogWrite(right1, rightSpeed);
   Serial.println("Motors on");
+
+  irrecv.enableIRIn();
 
   pinMode(SHT_LOX1, OUTPUT);
   pinMode(SHT_LOX2, OUTPUT);
