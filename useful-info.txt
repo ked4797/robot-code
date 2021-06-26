@@ -22,4 +22,8 @@ R: 215 L: 200
 Things to do during Half Term:
 - Turn right
 - Get noise working in conjunction with sensors and motors
-- Get IR sensor operating
+- Get IR sensor opera
+
+IR central signal: FF01FE
+IR left signal: FF04FB
+IR right signal: FF02FD
