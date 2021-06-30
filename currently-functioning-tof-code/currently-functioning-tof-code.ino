@@ -43,6 +43,7 @@ bool turn = false;
 bool turning = false;
 bool turned = false;
 bool done = false;
+bool standardSpeed;
 unsigned long startTime;
 bool stopped = false;
 bool reversing = false;
@@ -109,14 +110,18 @@ void read_dual_sensors() {
     // print() & println() can't handle printing long longs. (uint64_t)
     serialPrintUint64(results.value, HEX);
     Serial.println("");
-    if (results.value == 0xFF01FE){
-      // continue straight on
+    if (results.value == 0xFF01FE && !standardSpeed){
+      // go straight on
+      analogWrite(left1, leftSpeed);
+      analogWrite(right1, rightSpeed);
     }
     else if (results.value == 0xFF04FB){
       // robot is off to the left
+      analogWrite(right1, 0);
     }
     else if (results.value == 0xFF02FD){
       // robot is off to the right
+      analogWrite(left1, 0);
     }
     irrecv.resume();  // Receive the next value
   }
