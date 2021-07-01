@@ -45,8 +45,10 @@ void loop() {
     Serial.println("");
     if (results.value == 0xFF01FE && !standardSpeed){
       // go straight on
-      analogWrite(left1, 204);
-      analogWrite(right1, 207);
+      rightSpeed = 207;
+      leftSpeed = 204;
+      analogWrite(left1, leftSpeed);
+      analogWrite(right1, rightSpeed);
     }
     else if (results.value == 0xFF04FB){
       // robot is off to the left
