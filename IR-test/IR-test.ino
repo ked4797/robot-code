@@ -15,6 +15,7 @@ decode_results results;
 
 int rightSpeed = 207;
 int leftSpeed = 204;
+bool standardSpeed = true;
 
 void setup() {
   Serial.begin(115200);
@@ -49,20 +50,26 @@ void loop() {
       leftSpeed = 204;
       analogWrite(left1, leftSpeed);
       analogWrite(right1, rightSpeed);
+      standardSpeed = true;
+      Serial.println("Heading straight");
     }
     else if (results.value == 0xFF04FB){
       // robot is off to the left
-      rightSpeed--;
-      leftSpeed++;
+      rightSpeed-=5;
+      leftSpeed+=5;
       analogWrite(right1, rightSpeed);
       analogWrite(left1, leftSpeed);
+      standardSpeed = false;
+      Serial.println("Veering right");
     }
     else if (results.value == 0xFF02FD){
       // robot is off to the right
-      rightSpeed++;
-      leftSpeed--;
+      rightSpeed+=5;
+      leftSpeed-=5;
       analogWrite(right1, rightSpeed);
       analogWrite(left1, leftSpeed);
+      standardSpeed = false;
+      Serial.println("Veering left");
     }
     irrecv.resume();  // Receive the next value
   }

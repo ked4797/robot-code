@@ -43,7 +43,7 @@ bool turn = false;
 bool turning = false;
 bool turned = false;
 bool done = false;
-bool standardSpeed;
+bool standardSpeed = true;
 unsigned long startTime;
 bool stopped = false;
 bool reversing = false;
@@ -112,16 +112,30 @@ void read_dual_sensors() {
     Serial.println("");
     if (results.value == 0xFF01FE && !standardSpeed){
       // go straight on
+      rightSpeed = 207;
+      leftSpeed = 204;
       analogWrite(left1, leftSpeed);
       analogWrite(right1, rightSpeed);
+      standardSpeed = true;
+      Serial.println("Heading straight");
     }
     else if (results.value == 0xFF04FB){
       // robot is off to the left
-      analogWrite(right1, 0);
+      rightSpeed--;
+      leftSpeed++;
+      analogWrite(right1, rightSpeed);
+      analogWrite(left1, leftSpeed);
+      standardSpeed = false;
+      Serial.println("Veering right");
     }
     else if (results.value == 0xFF02FD){
       // robot is off to the right
-      analogWrite(left1, 0);
+      rightSpeed++;
+      leftSpeed--;
+      analogWrite(right1, rightSpeed);
+      analogWrite(left1, leftSpeed);
+      standardSpeed = false;
+      Serial.println("Veering left");
     }
     irrecv.resume();  // Receive the next value
   }
