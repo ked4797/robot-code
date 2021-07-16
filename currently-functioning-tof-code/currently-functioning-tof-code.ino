@@ -97,77 +97,24 @@ void read_dual_sensors() {
   if (digitalRead(trackerRight) == 1 && digitalRead(trackerLeft) == 1){
     analogWrite(left1, leftSpeed);
     analogWrite(right1, rightSpeed);
+    Serial.println("On centre\n\n\n");
   }
   else if (digitalRead(trackerRight) == 0 && digitalRead(trackerLeft) == 1){
     analogWrite(left1, 0);
+    Serial.println("Too far right\n\n\n");
   }
   else if (digitalRead(trackerLeft) == 0 && digitalRead(trackerRight) == 1){
     analogWrite(right1, 0);
-  }
-
-  // take a reading from IR
-  if (irrecv.decode(&results)) {
-    // print() & println() can't handle printing long longs. (uint64_t)
-    serialPrintUint64(results.value, HEX);
-    Serial.println("");
-    if (results.value == 0xFF01FE && !standardSpeed){
-      // go straight on
-      rightSpeed = 207;
-      leftSpeed = 204;
-      analogWrite(left1, leftSpeed);
-      analogWrite(right1, rightSpeed);
-      standardSpeed = true;
-      Serial.println("Heading straight");
-    }
-    else if (results.value == 0xFF04FB){
-      // robot is off to the left
-      rightSpeed--;
-      leftSpeed++;
-      analogWrite(right1, rightSpeed);
-      analogWrite(left1, leftSpeed);
-      standardSpeed = false;
-      Serial.println("Veering right");
-    }
-    else if (results.value == 0xFF02FD){
-      // robot is off to the right
-      rightSpeed++;
-      leftSpeed--;
-      analogWrite(right1, rightSpeed);
-      analogWrite(left1, leftSpeed);
-      standardSpeed = false;
-      Serial.println("Veering left");
-    }
-    irrecv.resume();  // Receive the next value
+    Serial.println("Too far left\n\n\n");
   }
 
   // take readings from TOFs
   lox1.rangingTest(&measure1, false); // pass in 'true' to get debug data printout!
   lox2.rangingTest(&measure2, false); // pass in 'true' to get debug data printout!
 
-  // print sensor one reading
-  Serial.print(F("1: "));
-  if(measure1.RangeStatus != 4) {     // if not out of range
-    Serial.print(measure1.RangeMilliMeter);
-  } else {
-    Serial.print(F("Out of range"));
-  }
-  
-  Serial.print(F(" "));
-
-  // print sensor two reading
-  Serial.print(F("2: "));
-  if(measure2.RangeStatus != 4) {
-    Serial.print(measure2.RangeMilliMeter);
-  } else {
-    Serial.print(F("Out of range"));
-  }
-  
-  Serial.println();
-
-
   lox2.rangingTest(&measure2, true);
   // if the distance to the right is greater than 250mm or the robot is in the process of turning, and it has not turned before and it's been more than 8 seconds
-   if ((measure2.RangeMilliMeter > 250 || turn == true) && turned == false && millis() > 10000){
+   if ((measure2.RangeMilliMeter > 250 || turn == true) && turned == false && millis() > 8000){
     // if this is the first time the previous if statement has been true
     if (turn != true){
       // start turning and record the start turn time
@@ -191,6 +138,50 @@ void read_dual_sensors() {
     analogWrite(left1, leftSpeed);
     analogWrite(right1, rightSpeed);
     turned = true;
+    // IR shit#
+    while (true){
+      if (irrecv.decode(&results)) {
+      // print() & println() can't handle printing long longs. (uint64_t)
+      serialPrintUint64(results.value, HEX);
+      Serial.println("");
+      if (results.value == 0xFF01FE && !standardSpeed){
+        // go straight on
+        rightSpeed = 207;
+        leftSpeed = 204;
+        analogWrite(left1, leftSpeed);
+        analogWrite(right1, rightSpeed);
+        standardSpeed = true;
+        Serial.println("Heading straight");
+      }
+      else if (results.value == 0xFF04FB){
+        // robot is off to the left
+        rightSpeed-=5;
+        leftSpeed+=5;
+        analogWrite(right1, rightSpeed);
+        analogWrite(left1, leftSpeed);
+        standardSpeed = false;
+        Serial.println("Veering right");
+      }
+      else if (results.value == 0xFF02FD){
+        // robot is off to the right
+        rightSpeed+=5;
+        leftSpeed-=5;
+        analogWrite(right1, rightSpeed);
+        analogWrite(left1, leftSpeed);
+        standardSpeed = false;
+        Serial.println("Veering left");
+      }
+      if (measure1.RangeMilliMeter() < 150){
+        digitalWrite(26, HIGH);
+        while(1);
+      }
+      irrecv.resume();  // Receive the next value
+    }
+    if (measure1.RangeMilliMeter < 150){
+      analogWrite(left1, 0);
+      analogWrite(right1, 0);
+    }
+    }
     }
   }
 
@@ -245,8 +236,8 @@ void setup() {
   pinMode (left0, OUTPUT);
   pinMode (right1, OUTPUT);
   pinMode (left1, OUTPUT);
-  pinMode (trackerRight, INPUT);
-  pinMode (trackerLeft, INPUT);
+  pinMode (trackerRight, INPUT_PULLUP);
+  pinMode (trackerLeft, INPUT_PULLUP);
 
   analogWrite(left0, 0);
   analogWrite(left1, leftSpeed);
