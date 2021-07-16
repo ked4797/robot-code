@@ -238,6 +238,7 @@ void setup() {
   pinMode (left1, OUTPUT);
   pinMode (trackerRight, INPUT_PULLUP);
   pinMode (trackerLeft, INPUT_PULLUP);
+  pinMode(26, OUTPUT);
 
   analogWrite(left0, 0);
   analogWrite(left1, leftSpeed);
