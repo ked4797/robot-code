@@ -171,15 +171,13 @@ void read_dual_sensors() {
         standardSpeed = false;
         Serial.println("Veering left");
       }
-      if (measure1.RangeMilliMeter() < 150){
-        digitalWrite(26, HIGH);
-        while(1);
-      }
       irrecv.resume();  // Receive the next value
     }
     if (measure1.RangeMilliMeter < 150){
       analogWrite(left1, 0);
       analogWrite(right1, 0);
+      digitalWrite(26, HIGH);
+      while(1);
     }
     }
     }
@@ -236,8 +234,8 @@ void setup() {
   pinMode (left0, OUTPUT);
   pinMode (right1, OUTPUT);
   pinMode (left1, OUTPUT);
-  pinMode (trackerRight, INPUT_PULLUP);
-  pinMode (trackerLeft, INPUT_PULLUP);
+  pinMode (trackerRight, INPUT);
+  pinMode (trackerLeft, INPUT);
   pinMode(26, OUTPUT);
 
   analogWrite(left0, 0);
